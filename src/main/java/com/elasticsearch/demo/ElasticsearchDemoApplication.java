@@ -1,18 +1,13 @@
 package com.elasticsearch.demo;
 
-import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.client.transport.TransportClient;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
+@EnableScheduling
+@MapperScan("com.elasticsearch.demo.mapper")
 public class ElasticsearchDemoApplication {
 
 	public static void main(String[] args) {

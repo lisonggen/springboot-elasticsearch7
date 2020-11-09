@@ -69,23 +69,18 @@ public class EsController {
     }
 
     @PostMapping("/book/add")
-    public ResponseEntity add(@RequestParam("author")String author,
-                                          @RequestParam("title")String title,
-                                          @RequestParam("word_count")Integer wordCount,
-                                          @RequestParam("publish_date")
-                                              @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-                                              Date publishDate
-    ) {
+    public ResponseEntity add(@RequestParam("auth")String auth,
+                              @RequestParam("title")String title,
+                              @RequestParam("word_count")Integer wordCount,
+                              @RequestParam("publish_date") String publishDate) {
         IndexRequest request = new IndexRequest("book");
-
-
         try {
             XContentBuilder builder = XContentFactory.jsonBuilder()
                     .startObject()
-                    .field("author", author)
+                    .field("auth", auth)
                     .field("title", title)
                     .field("word_count", wordCount)
-                    .field("publish_date", publishDate.getTime())
+                    .field("publish_date", publishDate)
                     .endObject();
 
             request.opType("index").source(builder);
@@ -113,7 +108,9 @@ public class EsController {
     @PutMapping("/book/update")
     public ResponseEntity update(@RequestParam(name = "id") String id,
                                  @RequestParam(name = "title", required = false) String title,
-                                 @RequestParam(name = "author", required = false) String author) {
+                                 @RequestParam(name = "wordCount", required = false) Integer wordCount,
+                                 @RequestParam(name = "auth", required = false) String auth,
+                                 @RequestParam(name = "publishDate", required = false) String publishDate) {
         UpdateRequest request = new UpdateRequest("book", id);
         try {
             XContentBuilder builder = XContentFactory.jsonBuilder()
@@ -121,8 +118,14 @@ public class EsController {
             if (!StringUtils.isEmpty(title)) {
                 builder.field("title", title);
             }
-            if (!StringUtils.isEmpty(author)) {
-                builder.field("author", author);
+            if (wordCount != null) {
+                builder.field("word_count", wordCount);
+            }
+            if (!StringUtils.isEmpty(auth)) {
+                builder.field("auth", auth);
+            }
+            if (!StringUtils.isEmpty(publishDate)) {
+                builder.field("publish_date", publishDate);
             }
             builder.endObject();
             request.doc(builder);
@@ -140,30 +143,44 @@ public class EsController {
     }
 
     @PostMapping("/book/query")
-    public ResponseEntity query(@RequestParam(value = "author", required = false) String author,
+    public ResponseEntity query(@RequestParam(value = "id", required = false) Long id,
+                                @RequestParam(value = "auth", required = false) String auth,
                                @RequestParam(value = "title", required = false) String title,
-                               @RequestParam(value = "gt_word_count", defaultValue = "0") int gtWordCount,
-                               @RequestParam(value = "lt_word_count", required = false) Integer ltWordCount
-    ) {
+                               @RequestParam(value = "gtWordCount", defaultValue = "0") Integer gtWordCount,
+                               @RequestParam(value = "ltWordCount", required = false) Integer ltWordCount,
+                               @RequestParam(value = "fromPublishDate", required = false) String fromPublishDate,
+                               @RequestParam(value = "toPublishDate", required = false) String toPublishDate) {
         SearchRequest request = new SearchRequest("book");
         //构造bool查询
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
 
-        if (!StringUtils.isEmpty(author)) {
-            boolQueryBuilder.must(QueryBuilders.matchQuery("author", author));
+        if (id != null) {
+            boolQueryBuilder.must(QueryBuilders.matchQuery("id", id));
+        }
+
+        if (!StringUtils.isEmpty(auth)) {
+            boolQueryBuilder.must(QueryBuilders.matchQuery("auth", auth));
         }
 
         if (!StringUtils.isEmpty(title)) {
             boolQueryBuilder.must(QueryBuilders.matchQuery("title", title));
         }
 
-        RangeQueryBuilder rangeQueryBuilder = QueryBuilders.rangeQuery("word_count")
+        RangeQueryBuilder wordCountRangeQueryBuilder = QueryBuilders.rangeQuery("word_count")
                 .from(gtWordCount);
         if (ltWordCount != null && ltWordCount > 0) {
-            rangeQueryBuilder.to(ltWordCount);
+            wordCountRangeQueryBuilder.to(ltWordCount);
         }
+        boolQueryBuilder.filter(wordCountRangeQueryBuilder);
 
-        boolQueryBuilder.filter(rangeQueryBuilder);
+        RangeQueryBuilder publishDateRangeQueryBuilder = QueryBuilders.rangeQuery("publish_date");
+        if (!StringUtils.isEmpty(fromPublishDate)) {
+            publishDateRangeQueryBuilder.from(fromPublishDate);
+        }
+        if (!StringUtils.isEmpty(toPublishDate)) {
+            publishDateRangeQueryBuilder.to(toPublishDate);
+        }
+        boolQueryBuilder.filter(publishDateRangeQueryBuilder);
 
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.from(0).size(10).query(boolQueryBuilder);
@@ -173,7 +190,6 @@ public class EsController {
 
         List<Map<String, Object>> list = new ArrayList<>();
         try {
-            SearchResponse searchResponse = client.search(request, RequestOptions.DEFAULT);
             for (SearchHit s : client.search(request, RequestOptions.DEFAULT).getHits().getHits()) {
                 list.add(s.getSourceAsMap());
             }

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.elasticsearch.demo.mapper.BookMapper">
+  <resultMap id="BaseResultMap" type="com.elasticsearch.demo.model.BookModel">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="title" jdbcType="VARCHAR" property="title" />
+    <result column="auth" jdbcType="VARCHAR" property="auth" />
+    <result column="word_count" jdbcType="INTEGER" property="wordCount" />
+    <result column="publish_date" jdbcType="TIMESTAMP" property="publishDate" />
+  </resultMap>
+  <select id="selectById" parameterType="map" resultMap="BaseResultMap">
+    select id,
+            title,
+            auth,
+            word_count,
+            publish_date
+      from book
+     where id = #{id,jdbcType=VARCHAR}
+  </select>
+
+  <select id="selectAll" parameterType="map" resultMap="BaseResultMap">
+    select id,
+            title,
+            auth,
+            word_count,
+            publish_date
+      from book
+  </select>
+
+  <delete id="deleteById" parameterType="map">
+    delete from book
+     where id = #{id,jdbcType=VARCHAR}
+  </delete>
+
+  <insert id="insertSelective" parameterType="com.elasticsearch.demo.model.BookModel">
+    <selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into book
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="title != null">
+        title,
+      </if>
+      <if test="auth != null">
+        auth,
+      </if>
+      <if test="wordCount != null">
+        word_count,
+      </if>
+      <if test="publishDate != null">
+        publish_date,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="title != null">
+        #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="auth != null">
+        #{auth,jdbcType=VARCHAR},
+      </if>
+      <if test="wordCount != null">
+        #{wordCount,jdbcType=INTEGER},
+      </if>
+      <if test="publishDate != null">
+        #{publishDate,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateById" parameterType="com.elasticsearch.demo.model.BookModel">
+    update book
+    <set>
+      <if test="title != null">
+        title = #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="auth != null">
+        auth = #{auth,jdbcType=VARCHAR},
+      </if>
+      <if test="wordCount != null">
+        word_count = #{wordCount,jdbcType=INTEGER},
+      </if>
+      <if test="publishDate != null">
+        publish_date = #{publishDate,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>
