@@ -36,11 +36,11 @@ public class EsUtilTest {
 
     @Test
     public void testCreateIndex() {
-        esUtil.createIndex("test_es");
+        esUtil.createIndex("user");
     }
 
     @Test
     public void testDeleteIndex() {
-        esUtil.deleteIndex("test_es");
+        esUtil.deleteIndex("user");
     }
 }

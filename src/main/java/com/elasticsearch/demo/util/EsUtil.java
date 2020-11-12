@@ -2,6 +2,7 @@ package com.elasticsearch.demo.util;
 
 import com.elasticsearch.demo.model.BookModel;
 import com.elasticsearch.demo.vo.ResponseBean;
+import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
@@ -46,6 +47,7 @@ import java.util.List;
  * @create: 2020-11-04 08:53
  **/
 
+@Slf4j
 @Component
 public class EsUtil {
 
@@ -65,11 +67,15 @@ public class EsUtil {
                     .startObject()
                     .field("properties")
                     .startObject()
-                    .field("name").startObject().field("index", "true").field("type", "keyword").endObject()
-                    .field("age").startObject().field("index", "true").field("type", "integer").endObject()
-                    .field("money").startObject().field("index", "true").field("type", "double").endObject()
+                    .field("user_id").startObject().field("index", "true").field("type", "keyword").endObject()
+                    .field("user_name").startObject().field("index", "true").field("type", "keyword").endObject()
+                    .field("phone").startObject().field("index", "true").field("type", "keyword").endObject()
                     .field("address").startObject().field("index", "true").field("type", "text").field("analyzer", "ik_max_word").endObject()
                     .field("birthday").startObject().field("index", "true").field("type", "date").field("format", "strict_date_optional_time||epoch_millis").endObject()
+                    .field("email").startObject().field("index", "true").field("type", "keyword").endObject()
+                    .field("id_card").startObject().field("index", "true").field("type", "keyword").endObject()
+                    .field("create_time").startObject().field("index", "true").field("type", "date").field("format", "strict_date_optional_time||epoch_millis").endObject()
+                    .field("update_time").startObject().field("index", "true").field("type", "date").field("format", "strict_date_optional_time||epoch_millis").endObject()
                     .endObject()
                     .endObject();
             CreateIndexRequest createIndexRequest = new CreateIndexRequest(indexName);
@@ -78,7 +84,7 @@ public class EsUtil {
             CreateIndexResponse createIndexResponse = restHighLevelClient.indices().create(createIndexRequest, RequestOptions.DEFAULT);
             boolean acknowledged = createIndexResponse.isAcknowledged();
             if (acknowledged) {
-                return new ResponseBean(200, "创建成功", null);
+                return new ResponseBean(HttpStatus.OK.value(), "创建成功", null);
             } else {
                 return new ResponseBean(1002, "创建失败", null);
             }
@@ -269,4 +275,5 @@ public class EsUtil {
 
         return new ResponseEntity(HttpStatus.OK);
     }
+
 }

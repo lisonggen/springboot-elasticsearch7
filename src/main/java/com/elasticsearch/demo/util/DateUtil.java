@@ -1,7 +1,5 @@
 package com.elasticsearch.demo.util;
 
-import org.joda.time.DateTime;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -18,4 +16,7 @@ public class DateUtil {
         return sdf.format(date);
     }
 
+    public static void main(String[] args) {
+        System.out.println(dateFormate(new Date(), "yyyy-MM-dd hh:mm:ss"));
+    }
 }
